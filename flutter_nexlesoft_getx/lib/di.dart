@@ -33,12 +33,16 @@ Future<void> init() async {
           requestHeader: true, requestBody: true, responseHeader: true),
     );
 
-  Get.lazyPut<Dio>(() => dioInstance);
+  Get.put<Dio>(dioInstance);
 
   Get.lazyPut<SharedPreferences>(() => prefs);
 
-  Get.lazyPut<AuthApiService>(() => AuthApiService(Get.find()));
-  Get.lazyPut<CategoryApiService>(() => CategoryApiService(Get.find()));
+  Get.put<AuthApiService>(
+    AuthApiService(Get.find()),
+  );
+  Get.put<CategoryApiService>(
+    CategoryApiService(Get.find()),
+  );
 
   Get.lazyPut<AuthRepository>(
       () => AuthRepositoryImpl(authApiService: Get.find()));
@@ -55,4 +59,8 @@ Future<void> init() async {
 
   Get.lazyPut<HomeController>(
       () => HomeController(getAllCategoriesUsecase: Get.find()));
+}
+
+Future<void> reset() async {
+  Get.deleteAll(force: true);
 }

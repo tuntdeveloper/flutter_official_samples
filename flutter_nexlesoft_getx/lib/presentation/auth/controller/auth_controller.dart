@@ -1,16 +1,12 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_nexlesoft_getx/config/constant/api_constant.dart';
 import 'package:flutter_nexlesoft_getx/config/constant/pref_constant.dart';
 import 'package:flutter_nexlesoft_getx/core/params/sign_in_param.dart';
 import 'package:flutter_nexlesoft_getx/core/params/sign_up_param.dart';
 import 'package:flutter_nexlesoft_getx/core/resources/data_state.dart';
-import 'package:flutter_nexlesoft_getx/data/data_sources/remote/category_api_service.dart';
 import 'package:flutter_nexlesoft_getx/domain/use_case/sign_in_usecase.dart';
 import 'package:flutter_nexlesoft_getx/domain/use_case/sign_up_usecase.dart';
 import 'package:flutter_nexlesoft_getx/presentation/auth/controller/auth_state.dart';
 import 'package:flutter_nexlesoft_getx/theme/components/custom_text_field.dart';
 import 'package:get/get.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_nexlesoft_getx/di.dart' as di;
 
@@ -32,8 +28,11 @@ class AuthController extends GetxController {
   AuthState get state => _state;
 
   Future<void> onSignUp() async {
-    if (_state.email?.isEmpty == true || _state.password?.isEmpty == true)
-      return;
+    final canNotSignUp = _state.email?.isEmpty == true ||
+        _state.password?.isEmpty == true ||
+        _state.passwordStatus != CustomPasswordTextFieldStatus.strong;
+
+    if (canNotSignUp) return;
 
     _state = _state.copyWith(isLoading: true);
 
@@ -41,8 +40,8 @@ class AuthController extends GetxController {
         params: SignUpParam(
       email: _state.email,
       password: _state.password,
-      firstName: 'TUNT',
-      lastName: '123',
+      firstName: 'first name of user',
+      lastName: 'last name of user',
     ));
 
     if (!signUpResult.isSuccess) return;
@@ -53,18 +52,21 @@ class AuthController extends GetxController {
       password: _state.password,
     ));
 
-    if (signInResult.isSuccess) {
-      final token = signInResult.data?.accessToken;
+    if (!signInResult.isSuccess) return;
 
-      await _pref.setString(PrefConstant.PREF_TOKEN_KEY, token ?? '');
+    final token = signInResult.data?.accessToken;
 
-      await di.init();
+    final result =
+        await _pref.setString(PrefConstant.PREF_TOKEN_KEY, token ?? '');
 
-      _state = _state.copyWith(
-        isLoading: false,
-        action: AuthStateActionSignInSuccess(),
-      );
-    }
+    if (!result) return;
+
+    await di.reset().then((_) => di.init());
+
+    _state = _state.copyWith(
+      isLoading: false,
+      action: AuthStateActionSignInSuccess(),
+    );
 
     update();
   }

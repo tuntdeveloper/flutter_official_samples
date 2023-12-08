@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 enum CustomTextFieldType {
   normal,
@@ -54,26 +55,31 @@ enum CustomPasswordTextFieldStatus {
 }
 
 class CustomTextField extends StatefulWidget {
-  const CustomTextField._(
-      {required this.type,
-      required this.onChange,
-      required this.hintText,
-      this.status = CustomPasswordTextFieldStatus.weak});
+  const CustomTextField._({
+    required this.type,
+    required this.onChange,
+    required this.hintText,
+    this.status = CustomPasswordTextFieldStatus.weak,
+    this.validator,
+  });
 
   final CustomTextFieldType type;
 
   final void Function(String?)? onChange;
   final String hintText;
   final CustomPasswordTextFieldStatus status;
+  final String? Function(String?)? validator;
 
   factory CustomTextField.normal({
     void Function(String?)? onChange,
     String hintText = '',
+    String? Function(String?)? validator,
   }) {
     return CustomTextField._(
       type: CustomTextFieldType.normal,
       onChange: onChange,
       hintText: hintText,
+      validator: validator,
     );
   }
 
@@ -97,6 +103,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   final _statusContentNotifier = ValueNotifier<bool>(false);
   final _statusNotifier = ValueNotifier<CustomPasswordTextFieldStatus>(
       CustomPasswordTextFieldStatus.shouldNotCheck);
+  final _passwordVisibleNotifier = ValueNotifier(false);
 
   @override
   void didUpdateWidget(covariant CustomTextField oldWidget) {
@@ -107,14 +114,18 @@ class _CustomTextFieldState extends State<CustomTextField> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _statusContentNotifier.dispose();
+    _statusNotifier.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (widget.type == CustomTextFieldType.normal) {
       return TextFormField(
-        validator: (value) {
-          if((value ?? '').isEmpty) {
-            return 'Email can not be empty';
-          }
-        },
+        style: Theme.of(context).textTheme.bodyMedium,
+        validator: widget.validator,
         onChanged: widget.onChange,
         decoration: InputDecoration(
           errorBorder: UnderlineInputBorder(
@@ -151,39 +162,64 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ValueListenableBuilder(
             valueListenable: _statusNotifier,
             builder: (context, status, _) {
-              return TextFormField(
-                onChanged: (value) {
-                  widget.onChange?.call(value);
-                  _statusContentNotifier.value = (value ?? '').isNotEmpty;
-                },
-                decoration: InputDecoration(
-                  errorBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      width: 3,
-                      style: BorderStyle.solid,
-                      color: Theme.of(context).colorScheme.error,
-                      strokeAlign: 0.5,
-                    ),
-                  ),
-                  focusedBorder: CustomPasswordInputBorder(
-                    passwordStatus: status,
-                    borderSide: BorderSide(
-                      width: 3,
-                      style: BorderStyle.solid,
-                      color: Theme.of(context).colorScheme.primary,
-                      strokeAlign: 0.5,
-                    ),
-                  ),
-                  hintText: widget.hintText,
-                  hintStyle: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        color: Colors.white.withOpacity(0.5),
+              return ValueListenableBuilder(
+                  valueListenable: _passwordVisibleNotifier,
+                  builder: (context, passwordVisible, _) {
+                    return TextFormField(
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      obscureText: !passwordVisible,
+                      validator: (password) {
+                        if (password?.isEmpty == true)
+                          return 'Password can not be empty';
+                        return null;
+                      },
+                      onChanged: (value) {
+                        widget.onChange?.call(value);
+                        _statusContentNotifier.value = (value ?? '').isNotEmpty;
+                      },
+                      decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            passwordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.white.withOpacity(0.5),
+                          ),
+                          onPressed: () {
+                            _passwordVisibleNotifier.value =
+                                !_passwordVisibleNotifier.value;
+                          },
+                        ),
+                        errorBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 3,
+                            style: BorderStyle.solid,
+                            color: Theme.of(context).colorScheme.error,
+                            strokeAlign: 0.5,
+                          ),
+                        ),
+                        focusedBorder: CustomPasswordInputBorder(
+                          passwordStatus: status,
+                          borderSide: BorderSide(
+                            width: 3,
+                            style: BorderStyle.solid,
+                            color: Theme.of(context).colorScheme.primary,
+                            strokeAlign: 0.5,
+                          ),
+                        ),
+                        hintText: widget.hintText,
+                        hintStyle:
+                            Theme.of(context).textTheme.bodySmall!.copyWith(
+                                  color: Colors.white.withOpacity(0.5),
+                                ),
+                        labelText: widget.hintText,
+                        labelStyle:
+                            Theme.of(context).textTheme.bodySmall!.copyWith(
+                                  color: Colors.white.withOpacity(0.5),
+                                ),
                       ),
-                  labelText: widget.hintText,
-                  labelStyle: Theme.of(context).textTheme.bodySmall!.copyWith(
-                        color: Colors.white.withOpacity(0.5),
-                      ),
-                ),
-              );
+                    );
+                  });
             }),
         SizedBox(height: 8.h),
         ValueListenableBuilder(

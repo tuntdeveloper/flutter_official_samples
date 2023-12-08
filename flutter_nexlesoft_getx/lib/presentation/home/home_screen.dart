@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_nexlesoft_getx/data/model/category_model.dart';
+import 'package:flutter_nexlesoft_getx/presentation/auth/sign_up_screen.dart';
 import 'package:flutter_nexlesoft_getx/presentation/home/controller/home_controller.dart';
 import 'package:flutter_nexlesoft_getx/presentation/home/controller/home_state.dart';
+import 'package:flutter_nexlesoft_getx/presentation/home/home_category_item_widget.dart';
+import 'package:flutter_nexlesoft_getx/route/app_route.dart';
 import 'package:flutter_nexlesoft_getx/theme/components/custom_background.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
-  static Future<dynamic> push(BuildContext context) async {
-    return Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (_) => const HomeScreen()));
-  }
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -39,11 +37,19 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  InkWell(
+                      onTap: () async {
+                        await Get.find<SharedPreferences>().clear();
+                        Get.offAndToNamed(AppRoute.signUp.getPath);
+                      },
+                      child: const Icon(Icons.arrow_back_ios,
+                          color: Colors.white)),
                   GetBuilder<HomeController>(builder: (controller) {
                     return InkWell(
                         onTap: () {
                           if (!controller.state.shouldShowDone) return;
+
+                          //TODO Navigate inside app
                         },
                         child: Text('Done',
                             style: Theme.of(context)
@@ -86,53 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
               }),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class HomeCategoryItemWidget extends StatelessWidget {
-  const HomeCategoryItemWidget({
-    super.key,
-    required this.data,
-    required this.onTap,
-  });
-
-  final CategoryModel data;
-  final void Function(int?) onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onTap.call(data.id),
-      child: Container(
-        alignment: Alignment.center,
-        decoration: data.isSelected ?? false
-            ? BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                gradient: LinearGradient(
-                  begin: Alignment(0.49, 0.87),
-                  end: Alignment(-0.49, -0.87),
-                  colors: [Color(0xFF8A31A8), Color(0xFF8A00FF)],
-                ),
-              )
-            : ShapeDecoration(
-                shape: RoundedRectangleBorder(
-                  side: BorderSide(
-                    width: 1,
-                    color: Colors.white.withOpacity(0.11999999731779099),
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-        child: Text(
-          data.name ?? '',
-          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                height: 0.12,
-                fontSize: 14.sp,
-                color: Colors.white.withOpacity(0.8199999928474426),
-              ),
         ),
       ),
     );
