@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/signUp_tool_bar"
+        layout="@layout/custom_tool_bar" />
+
+    <include
+        android:id="@+id/signUp_edit_text_name"
+        layout="@layout/custom_edit_text" />
+
+    <include
+        android:id="@+id/signUp_edit_text_email"
+        layout="@layout/custom_edit_text" />
+
+    <include
+        android:id="@+id/signUp_edit_text_password"
+        layout="@layout/custom_edit_text" />
+
+    <Space
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"/>
+
+    <Button
+        android:id="@+id/signUP_button_signUp"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Sign Up" />
+</LinearLayout>

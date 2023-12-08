@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">kotlin-chat-app</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="password_should_have_more_then_8_characters"><![CDATA[> Password should have more then 8 characters]]></string>
+    <string name="password_should_contains_a_letter_that_upper_case"><![CDATA[> Password should contains a letter that upper case]]></string>
+    <string name="password_should_contains_a_letter_that_lower_case"><![CDATA[> Password should contains a letter that lower case]]></string>
+    <string name="password_should_contains_a_special_character"><![CDATA[> Password should contains a special character]]></string>
+</resources>
